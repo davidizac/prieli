@@ -858,9 +858,8 @@ const handler = async (req, res) => {
 
         if (filteredArray.includes('news')) return returnDefault()
 
-      // default:
-      //   console.log('Got default')
-      //   Tosend = await returnDefault()
+      case 0:
+        Tosend = await returnDefault()
     }
 
     return res.status(Tosend.statusCode).set(Tosend.headers).send(Tosend.body)
