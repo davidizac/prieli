@@ -859,6 +859,7 @@ const handler = async (req, res) => {
         if (filteredArray.includes('news')) return returnDefault()
 
       case 0:
+        console.log('Case 0')
         Tosend = await returnDefault()
     }
 
