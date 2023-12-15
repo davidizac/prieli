@@ -795,18 +795,18 @@ const categories = ['Career', 'Lifestyle', 'Relationships', 'Tech-gadgets']
 
 const handler = async (req, res) => {
   try {
-    console.log('Hellooooo')
+    console.log('Request received')
     // get request path from req express
     const requestURL = req.path || 'index.html'
     const headers = req.headers || {}
-    console.log('requestURL', requestURL)
+    
     const acceptedLanguages = ['pt', 'es', 'it', 'mx', 'de', 'fr']
     let language = 'en'
     let isArticle = false
     let isNewsArticle = false
     // Check if the URL contains a language prefix
     const languageMatch = requestURL.match(/^\/([a-z]{2})\//)
-    console.log('languageMatch', languageMatch)
+    
     if (languageMatch && acceptedLanguages.includes(languageMatch[1])) {
       language = languageMatch[1]
     } else {
@@ -827,21 +827,20 @@ const handler = async (req, res) => {
       isNewsArticle =
         filteredArray.includes('news') || filteredArray.includes('article')
     }
-    console.log(
-      'categoryIdentifier',
-      filteredArray,
-      isArticle,
-      isNewsArticle,
-      languageMatch
-    )
+    
+
     let Tosend
+    
+
     switch (filteredArray.length) {
       case 1:
+        console.log('Case 1')
         if (!languageMatch && !isArticle) {
           Tosend = await returnDirectPage(filteredArray[1])
         } else if (isArticle) Tosend = await returnArticle(filteredArray[1])
         else Tosend = await returnDefault(language)
       case 2:
+        console.log('Case 2')
         if (languageMatch && isArticle) {
           Tosend = await returnArticlesCategory(filteredArray[1], language)
         } else if (!languageMatch && (isArticle || isNewsArticle)) { Tosend = await returnArticle(filteredArray[1]) } else {
@@ -850,29 +849,23 @@ const handler = async (req, res) => {
         if (filteredArray.includes('news')) return returnDefault()
       case 3:
       case 4:
-        console.log('fshjkfh', languageMatch)
-
-        if (languageMatch && (isArticle || isNewsArticle)) { Tosend = await returnArticle(filteredArray[2]) } else Tosend = await returnDefault()
+        
+        console.log('Case 3, 4')
+        if (languageMatch && (isArticle || isNewsArticle)) { 
+          console.log('before returnArticle')
+          Tosend = await returnArticle(filteredArray[2])
+         } else Tosend = await returnDefault()
 
         if (filteredArray.includes('news')) return returnDefault()
 
-      default:
-        Tosend = await returnDefault()
+      // default:
+      //   console.log('Got default')
+      //   Tosend = await returnDefault()
     }
 
     return res.status(Tosend.statusCode).set(Tosend.headers).send(Tosend.body)
   } catch (error) {
     const html404 = await readFileAsync('./404.html')
-    const myHeaders = {
-      Cookie: 'device_view=full; hl=en'
-    }
-
-    const requestOptions = {
-      method: 'GET',
-      headers: myHeaders,
-      redirect: 'follow'
-    }
-
     return res
       .status(200)
       .set({
@@ -886,9 +879,9 @@ const express = require('express')
 
 const app = express()
 
-app.get('/', handler)
+app.get('*', handler)
 
-app.listen(5555, () => console.log('Server ready'))
+app.listen(5555, () => {})
 
 function readFileAsync (filePath) {
   return new Promise((resolve, reject) => {
@@ -903,20 +896,10 @@ function readFileAsync (filePath) {
 }
 async function returnDefault (lang = 'en') {
   return new Promise(async (resolve, reject) => {
-    console.log('returnDefault', lang)
+    
 
     try {
       let modifiedHTML = await readFileAsync('./index.html')
-
-      const myHeaders = {
-        Cookie: 'device_view=full; hl=en'
-      }
-
-      const requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-        redirect: 'follow'
-      }
 
       const responseD = await fetch(
         `https://xosignals.com/api-v3/magazine-news/getarticle?website=prieli.com&items=33&lang=${lang}`
@@ -925,7 +908,7 @@ async function returnDefault (lang = 'en') {
         throw new Error('Failed to fetch data')
       }
       const data = await responseD.json()
-      console.log('responseD', data)
+      
       let EndArray = addReadAndView(data)
       if (EndArray.length < 13) {
         EndArray = EndArray.concat(
@@ -933,7 +916,7 @@ async function returnDefault (lang = 'en') {
         )
       }
       const arrayJson = JSON.stringify(EndArray)
-      console.log('responseD', arrayJson)
+      
       //       // Insert the array into the HTML content
       modifiedHTML = modifiedHTML
         .toString()
@@ -947,7 +930,7 @@ async function returnDefault (lang = 'en') {
         body: modifiedHTML.toString()
       })
     } catch (error) {
-      console.log('error', error)
+      
       reject(error)
     }
   })
@@ -956,18 +939,8 @@ async function returnDefault (lang = 'en') {
 async function returnDirectPage (page) {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log('returnDirectPage', page)
+      
       const modifiedHTML = await readFileAsync('./' + page)
-
-      const myHeaders = {
-        Cookie: 'device_view=full; hl=en'
-      }
-
-      const requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-        redirect: 'follow'
-      }
 
       return resolve({
         statusCode: 200,
@@ -985,33 +958,20 @@ async function returnDirectPage (page) {
 async function returnArticle (path) {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log('returnArticle', path)
-
+      
+      console.log('returnArticle start')
       let modifiedHTML = path.endsWith('magazine')
         ? await readFileAsync('./post-details-noindex.html')
         : await readFileAsync('./post-details.html')
       path = path.replace('-magazine', '')
-      const myHeaders = {
-        Cookie: 'device_view=full; hl=en'
-      }
 
-      const requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-        redirect: 'follow'
-      }
-
-      console.log('path', path)
       const dat = await fetch(
         `https://xosignals.com/api-v3/magazine-news/${path}`
       )
-      console.log('dat', dat)
       if (!dat.ok) {
         throw new Error('Failed to fetch data')
       }
       const data = await dat.json()
-      console.log('responseDdat', data)
-      const str = await readFileAsync('./ads-by-article.html')
 
       data[0].content = data[0].content.replace(/<h2/g, '<h2 class=title_mag ')
       data[0].content = data[0].content.replace(
@@ -1019,33 +979,11 @@ async function returnArticle (path) {
         '<p class=paragraph_mag '
       )
 
-      // let count = 0;
-      // let injectedHtml = '';
 
-      // const titles = data[0].content.match(/<p class=paragraph_mag /g);
-      const ads = await readFileAsync('./ads-by-article.html')
-      // for (let i = 0; i < titles.length; i++) {
-
-      //   injectedHtml += data[0].content.substring(0, data[0].content.indexOf(titles[i]) + titles[i].length);
-
-      //   count++;
-
-      //   if (count % 2 === 0) {
-      //     injectedHtml += `><div>` + ads.toString().replaceAll('\n ', '').replaceAll('\n', '') + `</div`
-      //   }
-
-      //   data[0].content = data[0].content.substring(data[0].content.indexOf(titles[i]) + titles[i].length);
-      // }
-      // injectedHtml += data[0].content;
-
-      // data[0].content += ads.toString().replaceAll('\n ', '').replaceAll('\n', '')
-      // data[0].content += ads.toString().replaceAll('\n ', '').replaceAll('\n', '')
-      // data[0].content += ads.toString().replaceAll('\n ', '').replaceAll('\n', '')
-      // data[0].content += ads.toString().replaceAll('\n ', '').replaceAll('\n', '')
       data[0].read = calculateReadingTime(data[0].content)
       data[0].view = Math.ceil(2000 + Math.random() * 8000)
       const arrayJson = JSON.stringify(data)
-      console.log('responseD', arrayJson)
+      
       modifiedHTML = modifiedHTML
         .toString()
         .replace('< !--INSERT_ARRAY_HERE -->', arrayJson)
@@ -1057,7 +995,7 @@ async function returnArticle (path) {
         '< !--INSERT_ARRAY_HERE3 -->',
         JSON.stringify(getRandomElements(newData, 4))
       )
-
+        
       return resolve({
         statusCode: 200,
         headers: {
@@ -1066,14 +1004,14 @@ async function returnArticle (path) {
         body: modifiedHTML.toString()
       })
     } catch (error) {
-      console.log('error', error)
+      
       reject(error)
     }
   })
 }
 
 async function returnArticlesCategory (Category, lang) {
-  console.log('returnArticlesCategory', Category, lang)
+  
   return new Promise(async (resolve, reject) => {
     try {
       let modifiedHTML = await readFileAsync('./category-style-3.html')
@@ -1102,7 +1040,7 @@ async function returnArticlesCategory (Category, lang) {
         throw new Error('Failed to fetch data')
       }
       const data = await responseD.json()
-      console.log('responseD', data)
+      
       let EndArray = addReadAndView(data)
       if (EndArray.length < 13) {
         EndArray = EndArray.concat(
@@ -1170,13 +1108,13 @@ function checkUserLang (AcceptLanguage, languageMatch) {
 
     if (match) {
       const firstLanguage = match[0]
-      console.log('First language:', firstLanguage)
+      
       const acceptedLanguagesArray = ['pt', 'es', 'it', 'mx', 'de', 'fr']
       if (acceptedLanguagesArray.includes(languageMatch[1])) { return firstLanguage }
     }
     return 'en'
   } catch (error) {
-    console.log('error checkUserLang', error)
+    
     return 'en'
   }
 }
