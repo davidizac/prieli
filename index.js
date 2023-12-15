@@ -888,7 +888,7 @@ const app = express()
 
 app.get('/', handler)
 
-app.listen(3000, () => console.log('Server ready'))
+app.listen(5555, () => console.log('Server ready'))
 
 function readFileAsync (filePath) {
   return new Promise((resolve, reject) => {
