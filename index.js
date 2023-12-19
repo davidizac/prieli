@@ -873,7 +873,13 @@ const handler = async (req, res) => {
 const express = require("express");
 
 const app = express();
-
+app.get("/ads.txt", (req, res) => {
+  // render the ads.txt file
+  res.type("text/html");
+  res.send(`google.com, pub-2211387813318116, DIRECT, f08c47fec0942fa0
+google.com, pub-2481221237205256, DIRECT, f08c47fec0942fa0`);
+  res.end()
+}); 
 app.get("*", handler);
 
 app.listen(5555, () => {});
