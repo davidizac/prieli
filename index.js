@@ -876,7 +876,7 @@ const app = express();
 app.get("/ads.txt", (req, res) => {
   // render the ads.txt file
   res.type("text/html");
-  res.send(`google.com, pub-2211387813318116, DIRECT, f08c47fec0942fa0\n
+  res.send(`google.com, pub-2211387813318116, DIRECT, f08c47fec0942fa0<br/>
 google.com, pub-2481221237205256, DIRECT, f08c47fec0942fa0`);
   res.end()
 }); 
