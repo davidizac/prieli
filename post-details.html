@@ -562,6 +562,32 @@ var interstitialSlot, staticSlot, anchorSlot;
        document.addEventListener("DOMContentLoaded", (event) => {
            
        setTimeout(() => {
+            // when title are small, here the fix
+            document.querySelectorAll('.title_mag').forEach((h2) => {
+                if (h2.querySelector('ol')) {
+                    let ol = h2.querySelector('ol');
+                    let start = ol.getAttribute('start') || 1;
+                    ol.querySelectorAll('li').forEach((li, index) => {
+                        li.textContent = `${parseInt(start) + index}. ${li.textContent}`;
+                    });
+                }
+                h2.innerHTML = h2.textContent;
+            });
+
+            // center image
+            document.querySelectorAll('.broker-review_cont').forEach((element) => {
+                element.style.width = 'fit-content';
+                element.style.margin = 'auto';
+            });
+
+                        // when paragraph are small, here the fix
+            document.querySelectorAll('.paragraph_mag').forEach((p) => {
+                if (p.children[0]?.tagName && p.children[0]?.tagName?.toLowerCase() === 'span') {
+                    console.log('poioioiioioio')
+                    p.innerHTML = p.innerText;
+                }
+            });
+
             Array(...document.getElementsByClassName('paragraph_mag')).filter(p => p.innerHTML == '').filter(p => p.previousSibling.nodeType == Node.TEXT_NODE).forEach((a) => {
             a.appendChild(a.previousSibling)
             a.previousSibling.innerHTML = ''
